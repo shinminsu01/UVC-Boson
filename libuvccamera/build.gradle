@@ -36,6 +36,8 @@ android {
     defaultConfig {
         minSdkVersion 14
 		targetSdkVersion versionTarget
+		versionCode 2
+		versionName "1.1"
     }
 
     buildTypes {
@@ -49,6 +51,9 @@ android {
 			jniLibs.srcDir 'src/main/libs'
 			jni.srcDirs = []
 		}
+	}
+	lintOptions {
+		abortOnError false
 	}
 }
 
