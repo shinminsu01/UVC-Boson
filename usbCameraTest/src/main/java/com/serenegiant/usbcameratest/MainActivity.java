@@ -23,6 +23,7 @@
 
 package com.serenegiant.usbcameratest;
 
+import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
 import android.os.Bundle;
@@ -30,11 +31,13 @@ import android.view.Surface;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.serenegiant.common.BaseActivity;
 import com.serenegiant.usb.CameraDialog;
 import com.serenegiant.usb.IButtonCallback;
+import com.serenegiant.usb.IFrameCallback;
 import com.serenegiant.usb.IStatusCallback;
 import com.serenegiant.usb.USBMonitor;
 import com.serenegiant.usb.USBMonitor.OnDeviceConnectListener;
@@ -50,10 +53,16 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
     // for accessing USB and USB camera
     private USBMonitor mUSBMonitor;
 	private UVCCamera mUVCCamera;
+	// empty view!
 	private SimpleUVCCameraTextureView mUVCCameraView;
+	private ImageView mImageView;
 	// for open&start / stop&close camera preview
 	private ImageButton mCameraButton;
 	private Surface mPreviewSurface;
+
+	private final int DEFAULT_PREVIEW_WIDTH = 160;
+	private final int DEFAULT_PREVIEW_HEIGHT = 120;
+	private final int DEFAULT_FRAME_FORMAT = UVCCamera.FRAME_FORMAT_YUYV;
 
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
@@ -63,10 +72,11 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 		mCameraButton.setOnClickListener(mOnClickListener);
 
 		mUVCCameraView = (SimpleUVCCameraTextureView)findViewById(R.id.UVCCameraTextureView1);
-		mUVCCameraView.setAspectRatio(UVCCamera.DEFAULT_PREVIEW_WIDTH / (float)UVCCamera.DEFAULT_PREVIEW_HEIGHT);
+		mUVCCameraView.setAspectRatio(DEFAULT_PREVIEW_WIDTH / (float)DEFAULT_PREVIEW_HEIGHT);
+
+		mImageView = (ImageView) findViewById(R.id.UVCCameraImageView1);
 
 		mUSBMonitor = new USBMonitor(this, mOnDeviceConnectListener);
-
 	}
 
 	@Override
@@ -189,21 +199,22 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 						mPreviewSurface = null;
 					}
 					try {
-						camera.setPreviewSize(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_MJPEG);
+						camera.setPreviewSize(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT, DEFAULT_FRAME_FORMAT);
 					} catch (final IllegalArgumentException e) {
 						// fallback to YUV mode
 						try {
-							camera.setPreviewSize(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.DEFAULT_PREVIEW_MODE);
+							camera.setPreviewSize(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT, DEFAULT_FRAME_FORMAT);
 						} catch (final IllegalArgumentException e1) {
 							camera.destroy();
 							return;
 						}
 					}
+
 					final SurfaceTexture st = mUVCCameraView.getSurfaceTexture();
 					if (st != null) {
 						mPreviewSurface = new Surface(st);
 						camera.setPreviewDisplay(mPreviewSurface);
-//						camera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565/*UVCCamera.PIXEL_FORMAT_NV21*/);
+						camera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_RGB565/*UVCCamera.PIXEL_FORMAT_NV21*/);
 						camera.startPreview();
 					}
 					synchronized (mSync) {
@@ -272,7 +283,7 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 
 	// if you need frame data as byte array on Java side, you can use this callback method with UVCCamera#setFrameCallback
 	// if you need to create Bitmap in IFrameCallback, please refer following snippet.
-/*	final Bitmap bitmap = Bitmap.createBitmap(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, Bitmap.Config.RGB_565);
+	final Bitmap bitmap = Bitmap.createBitmap(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT, Bitmap.Config.RGB_565);
 	private final IFrameCallback mIFrameCallback = new IFrameCallback() {
 		@Override
 		public void onFrame(final ByteBuffer frame) {
@@ -283,7 +294,7 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 			mImageView.post(mUpdateImageTask);
 		}
 	};
-	
+
 	private final Runnable mUpdateImageTask = new Runnable() {
 		@Override
 		public void run() {
@@ -291,5 +302,5 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 				mImageView.setImageBitmap(bitmap);
 			}
 		}
-	}; */
+	};
 }

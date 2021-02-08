@@ -65,6 +65,10 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
     private static final int CAPTURE_PREPARE = 1;
     private static final int CAPTURE_RUNNING = 2;
 
+	private final int DEFAULT_PREVIEW_WIDTH = 160;
+	private final int DEFAULT_PREVIEW_HEIGHT = 120;
+	private final int DEFAULT_FRAME_FORMAT = UVCCamera.FRAME_FORMAT_YUYV;
+
 	private final Object mSync = new Object();
     // for accessing USB and USB camera
     private USBMonitor mUSBMonitor;
@@ -91,7 +95,7 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 		mCaptureButton.setOnClickListener(mOnClickListener);
 
 		mUVCCameraView = (SimpleUVCCameraTextureView)findViewById(R.id.UVCCameraTextureView1);
-		mUVCCameraView.setAspectRatio(UVCCamera.DEFAULT_PREVIEW_WIDTH / (float)UVCCamera.DEFAULT_PREVIEW_HEIGHT);
+		mUVCCameraView.setAspectRatio(DEFAULT_PREVIEW_WIDTH / (float)DEFAULT_PREVIEW_HEIGHT);
 		mUVCCameraView.setSurfaceTextureListener(mSurfaceTextureListener);
 
 		mUSBMonitor = new USBMonitor(this, mOnDeviceConnectListener);
@@ -195,7 +199,7 @@ public final class MainActivity extends BaseActivity implements CameraDialog.Cam
 						mPreviewSurface = null;
 					}
 					try {
-						camera.setPreviewSize(UVCCamera.DEFAULT_PREVIEW_WIDTH, UVCCamera.DEFAULT_PREVIEW_HEIGHT, UVCCamera.FRAME_FORMAT_MJPEG);
+						camera.setPreviewSize(DEFAULT_PREVIEW_WIDTH, DEFAULT_PREVIEW_HEIGHT, DEFAULT_FRAME_FORMAT);
 					} catch (final IllegalArgumentException e) {
 						try {
 							// fallback to YUV mode
